@@ -1,0 +1,8 @@
+*.vhd
+*.vmdk
+*.raw
+*.qcow2
+*.vpc
+*.vdi
+*.key
+*.pem

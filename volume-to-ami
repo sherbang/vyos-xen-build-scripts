@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -u
+set -e
+
+if [ $# -ne 2 ]; then
+    echo "Usage: $0 <vol-id> <descriptor>"
+    exit 1
+fi
+
+
+echo "Volume ID: $1"
+echo "Description: $2"
+
+# Make a snapshot and wait for it to complete
+snapshot_id=`ec2-create-snapshot --description $2 $1 | awk '{print $2}'`
+while true; do
+    set +e
+    ec2-describe-snapshots $snapshot_id | grep completed
+    if [ $? -eq 0 ]; then
+        break
+    fi
+    set -e
+    echo "Waiting for snapshot"
+    sleep 5
+done
+
+# find latest pvgrub aki
+echo "Finding pvgrub AKI"
+pvgrub_aki=`ec2-describe-images -o amazon --filter "name=pv-grub-hd0_*-x86_64.gz" | awk '{print $3, $2}' | sort | tail -n 1 | awk '{print $2}'`
+
+# make the AMI
+echo "Creating AMI"
+ami=`ec2-register --architecture x86_64 --name $2 --snapshot $snapshot_id --kernel $pvgrub_aki --root-device-name /dev/sda1 | awk '{print $2}'`
+
+# Launch one
+echo "Launching an instance"
+instance_id=`ec2-run-instances -k aws-pv-sg -t t1.micro -z ap-southeast-1b $ami | grep ^INSTANCE | awk '{print $2}'`
+
+# Tag it with a name:
+ec2-create-tags $instance_id -t Name=$2
+
+echo "Instance ID $instance_id created with name $2"
