@@ -9,6 +9,7 @@ machine_name="vyos-ami-build-`date -u +%Y%m%d-%H%M%S`"
 
 if [ "`uname -o`" == "Cygwin" ]; then
     # Taking advantage of a program called VMWareGateway: http://www.l4ka.org/159.php
+    # There's another application, NPTP, but it's interactive: http://shvechkov.tripod.com/nptp.html
     pipename="\\\\.\\pipe\\vmwaredebug"
     pipemode="client"
 else
