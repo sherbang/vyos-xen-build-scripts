@@ -8,9 +8,14 @@ iso=vyos-1.0.2-amd64.iso
 machine_name="vyos-ami-build-`date -u +%Y%m%d-%H%M%S`"
 
 if [ "`uname -o`" == "Cygwin" ]; then
-    pipename="\\\\.\\pipe\\$machine_name"
+    # Taking advantage of a program called VMWareGateway: http://www.l4ka.org/159.php
+    pipename="\\\\.\\pipe\\vmwaredebug"
+    pipemode="client"
 else
+    pipename="/tmp/$machine_name.pipe"
+    pipemode="server"
     echo "Not yet implemented for `uname -a`"
+    # (But I know it'll work!)
     exit 42
 fi
 
