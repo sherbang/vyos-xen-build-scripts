@@ -101,6 +101,6 @@ fi
 
 cp -v "$disk_path" ./$machine_name.vhd
 
-VBoxManage unregistervm --delete $machine
+VBoxManage unregistervm --delete $machine_name
 
 echo "VirtualBox build done. Disk image is here: $machine_name.vhd"
