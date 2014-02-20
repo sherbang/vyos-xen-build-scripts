@@ -64,9 +64,6 @@ fi
 echo "Starting VM"
 VBoxManage startvm $machine_name
 
-echo "Sleeping 10 for cygwin's sake"
-sleep 10
-
 # Install VyOS
 # Sends commands over the serial console using expect
 echo "Installing over serial console"
@@ -82,9 +79,15 @@ while true; do
     set -e
 done
 
-# Remove the CD from the SATA controller
+# Remove the CD from the SATA controller by "attaching" an empty device :)
+VBoxManage storageattach $machine_name --storagectl sata --port 2 --type dvddrive --medium none
+
 # Boot it
+VBoxManage startvm $machine_name
+
 # Run another expect script which logs in and preps config
+echo "Configuring VyOS for AWSification"
+./vyos-configure.expect tcp-connect:127.0.0.1:567
 
 if [ "`uname -o`" == "Cygwin" ]; then
     # clean up
