@@ -1,0 +1,44 @@
+#!/usr/bin/env expect
+
+set timeout 90
+
+set pipe [lindex $argv 0]
+
+spawn socat $pipe -
+send "\r\n"
+set timeout 10
+expect "^boot"
+send "\r\n"
+set timeout 90
+expect "vyos login:"
+send "vyos\n"
+expect "Password:"
+send "vyos\n"
+set timeout 10
+expect "vyos@vyos:~"
+send "install image\n"
+expect "Would you like to continue"
+send "Yes\n"
+expect "Partition"
+send "\n"
+expect "Install the image on?"
+send "\n"
+expect "Continue?"
+send "Yes\n"
+expect "How big of a root"
+send "\n"
+expect "What would you like to name this image"
+send "\n"
+expect "Which one should I copy"
+send "\n"
+expect "Enter password for user 'vyos'"
+send "vyos\n"
+expect "Retype"
+send "vyos\n"
+expect "Which drive should GRUB"
+send "\n"
+expect "vyos@vyos:~"
+send "poweroff\n"
+expect "Proceed with poweroff"
+send "Yes\n"
+expect EOF
