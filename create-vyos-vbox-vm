@@ -7,16 +7,20 @@ iso=vyos-1.0.2-amd64.iso
 
 machine_name="vyos-ami-build-`date -u +%Y%m%d-%H%M%S`"
 
-if [ "`uname -o`" == "Cygwin" ]; then
+if [ "`uname | cut -b1-6`" == "CYGWIN" ]; then
     # Taking advantage of a program called VMWareGateway: http://www.l4ka.org/159.php
     # There's another application, NPTP, but it's interactive: http://shvechkov.tripod.com/nptp.html
     pipename="\\\\.\\pipe\\vmwaredebug"
+    socat_pipe_name="tcp-connect:127.0.0.1:567"
     pipemode="client"
-else
+    namedpipe="yes"
+elif [ "`uname`" == "Darwin" -o "`uname`" == "Linux" ]; then
+    namedpipe="no"
     pipename="/tmp/$machine_name.pipe"
+    socat_pipe_name=$pipename
     pipemode="server"
+else
     echo "Not yet implemented for `uname -a`"
-    # (But I know it'll work!)
     exit 42
 fi
 
@@ -51,7 +55,8 @@ VBoxManage storageattach $machine_name --storagectl sata --port 1 --type hdd --m
 # mount iso
 VBoxManage storageattach $machine_name --storagectl sata --port 2 --type dvddrive --medium "$iso"
 
-if [ "`uname -o`" == "Cygwin" ]; then
+# If this is Cygwin/Windows, we need to send VBox's Named Pipe to something that socat can reach.
+if [ "$namedpipe" == "yes" ]; then
     set +e
     taskkill /F /IM vmwaregateway.exe
     set -e
@@ -67,7 +72,7 @@ VBoxManage startvm $machine_name
 # Install VyOS
 # Sends commands over the serial console using expect
 echo "Installing over serial console"
-./vyos-install.expect tcp-connect:127.0.0.1:567
+./vyos-install.expect $socat_pipe_name
 
 # Wait for the VM to shut down
 while true; do
@@ -87,10 +92,15 @@ VBoxManage startvm $machine_name
 
 # Run another expect script which logs in and preps config
 echo "Configuring VyOS for AWSification"
-./vyos-configure.expect tcp-connect:127.0.0.1:567
+./vyos-configure.expect $socat_pipe_name
 
-if [ "`uname -o`" == "Cygwin" ]; then
+if [ "$namedpipe" == "yes" ]; then
     # clean up
     taskkill /F /IM vmwaregateway.exe
 fi
 
+cp -v "$disk_path" ./$machine_name.vhd
+
+VBoxManage unregistervm --delete $machine
+
+echo "VirtualBox build done. Disk image is here: $machine_name.vhd"
