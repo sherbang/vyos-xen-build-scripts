@@ -1,5 +1,7 @@
 # How to push a VHD file to EC2
 
+# TODO: make an S3 bucket; I'm assuming that trickv-vyos-import exists
+
 ec2-import-volume install-with-ssh.vpc -f VHD --region ap-southeast-1 -z ap-southeast-1a -b trickv-vyos-import --prefix try2 -o $AWS_ACCESS_KEY -w $AWS_PRIVATE_KEY
 
 # Wait ages - this is where the VHD is sent to Amazon and can take an hour.
