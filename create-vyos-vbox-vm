@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+set -u
+set -e
+
+iso=vyos-1.0.2-amd64.iso
+
+machine_name="vyos-ami-build-`date -u +%Y%m%d-%H%M%S`"
+
+if [ "`uname -o`" == "Cygwin" ]; then
+    pipename="\\\\.\\pipe\\$machine_name"
+else
+    echo "Not yet implemented for `uname -a`"
+    exit 42
+fi
+
+VBoxManage createvm --name $machine_name --ostype Linux_64 --register
+
+
+# Add serial port
+# Needs to be split between two steps else I get an error about
+#  server mode.
+VBoxManage modifyvm $machine_name --uart1 0x3F8 4
+VBoxManage modifyvm $machine_name --uartmode1 server $pipename
+
+
+# Create SATA storage controller
+VBoxManage storagectl $machine_name --add sata --name sata --controller IntelAhci --portcount 2
+
+# Create and add hard disk. AWS likes VHD, VMDK, and RAW
+# I chose VHD because of it's dynamic space allocation and it seems to work.
+# VMDK might be better, but my VirtualBox VMDK files aren't recognized
+#  by AWS.
+# I'd like to use RAW, but it means that we have to upload all 2 gigs,
+#  even the blank gigs...there's no compression or sparse detection done by the ec2 tools.
+# HACK: find the config file just made so we know where to place the disk image later.
+# awk beauty below is brought to you by: http://stackoverflow.com/questions/5081916/how-to-print-all-the-columns-after-a-particular-number-using-awk
+config_file="`VBoxManage showvminfo $machine_name | grep ^Config\ file | awk '{ s = ""; for (i = 3; i <= NF; i++) s = s $i " "; print s }'`"
+machine_path=`dirname "$config_file"`
+disk_path=$machine_path/disk.vhd
+
+VBoxManage createhd --filename "$disk_path" --size 2048 --format VHD
+VBoxManage storageattach $machine_name --storagectl sata --port 1 --type hdd --medium "$disk_path"
+
+# mount iso
+VBoxManage storageattach $machine_name --storagectl sata --port 2 --type dvddrive --medium "$iso"

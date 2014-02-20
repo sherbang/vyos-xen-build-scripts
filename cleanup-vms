@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -u
+set -e
+
+vms=`VBoxManage list vms | grep ^\"vyos-ami-build | awk '{print $2}'`
+
+for machine in $vms; do
+    echo "Unregistering $machine"
+    echo -n "Hit enter to unregister this VM: " 
+    VBoxManage list vms | fgrep $machine
+    read dummy
+    VBoxManage unregistervm --delete $machine
+done
