@@ -25,6 +25,7 @@ send "delete interfaces ethernet eth0 hw-id\n"
 #   but it's what we need in AWS because ttyS0 doesn't exist there.
 #send "delete system console device ttyS0\n"
 send "set system console device hvc0 speed 9600\n"
+expect "\[edit\]"
 send "commit\n"
 expect "\[edit\]"
 send "save\n"
@@ -32,7 +33,23 @@ expect "Saving configuration"
 expect "Done"
 expect "\[edit\]"
 send "exit\n"
+
+# bug: once in a while, committing the configuration seems to log me out.
+# Handle this by expecting a logout and logging back in.
+send "exit\n\n\n"
+expect "vyos login:"
+send "vyos\n"
+expect "Password:"
+send "vyos\n"
 expect "vyos@vyos:~"
+
+send "conf\n"
+expect "\[edit\]"
+send "save\n"
+expect "Saving configuration"
+expect "Done"
+expect "\[edit\]"
+send "exit\n"
 
 send "sudo -i\n"
 expect "root@vyos:~"
