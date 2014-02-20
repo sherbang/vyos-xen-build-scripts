@@ -20,6 +20,9 @@ expect "\[edit\]"
 send "set service ssh\n"
 send "set interfaces ethernet eth0 address dhcp\n"
 send "delete interfaces ethernet eth0 hw-id\n"
+# Uncomment the following line when we get closer to done with this.
+# It means that a dev machine can't be used with these scripts anymore,
+#   but it's what we need in AWS because ttyS0 doesn't exist there.
 #send "delete system console device ttyS0\n"
 send "set system console device hvc0 speed 9600\n"
 send "commit\n"
@@ -42,7 +45,7 @@ send "    root(hd0)\n"
 send "    kernel /boot/1.0.2/vmlinuz boot=live vyatta-union=/boot/1.0.2 console=hvc0 root=/dev/xvda1\n"
 send "    initrd /boot/1.0.2/initrd.img\n"
 send "EndOfGrubConf\n"
-expect "vyos@vyos:~"
+expect "root@vyos:~"
 
 send "cat /boot/grub/menu.lst\n"
 expect "root@vyos:~"
