@@ -1,0 +1,13 @@
+# How to push a VHD file to EC2
+
+ec2-import-volume install-with-ssh.vpc -f VHD --region ap-southeast-1 -z ap-southeast-1a -b trickv-vyos-import --prefix try2 -o $AWS_ACCESS_KEY -w $AWS_PRIVATE_KEY
+
+# Wait ages - this is where the VHD is sent to Amazon and can take an hour.
+# The disk image for import-vol-fg53puyf has been uploaded to Amazon S3
+
+# wait for it to finish running this command until you see "complete" and a volume id
+ec2-describe-conversion-tasks | grep import-vol-fg53puyf -A 1
+TaskType        IMPORTVOLUME    TaskId  import-vol-fg53puyf     ExpirationTime  2014-02-26T03:58:38Z    Status  completed
+DISKIMAGE       DiskImageFormat VHD     DiskImageSize   255921664       VolumeId        vol-fdab9af2    VolumeSize      3       AvailabilityZone        ap-southeast-1aApproximateBytesConverted        255921664
+
+# At this point, you can just run ./volume-to-ami
