@@ -1,15 +1,46 @@
+#!/usr/bin/env bash
+
+set -u
+set -e
+
+if [ ! -f $1 ]; then
+    echo "Usage: $0 <image.vhd>"
+    exit 1
+fi
+
+
+image=$1
+
 # How to push a VHD file to EC2
 
 # TODO: make an S3 bucket; I'm assuming that trickv-vyos-import exists
 
-ec2-import-volume install-with-ssh.vpc -f VHD --region ap-southeast-1 -z ap-southeast-1a -b trickv-vyos-import --prefix try2 -o $AWS_ACCESS_KEY -w $AWS_PRIVATE_KEY
+import_output=`mktemp /tmp/import_output.XXXXXX`
+
+ec2-import-volume $image -f VHD --region ap-southeast-1 -z ap-southeast-1a -b trickv-vyos-import --prefix $image -o $AWS_ACCESS_KEY -w $AWS_SECRET_KEY | tee $import_output
+
+import_id=`cat $import_output | grep 'The disk image for import-vol' | awk '{print $5}'`
 
 # Wait ages - this is where the VHD is sent to Amazon and can take an hour.
-# The disk image for import-vol-fg53puyf has been uploaded to Amazon S3
+# Looking for string: The disk image for import-vol-fg53puyf has been uploaded to Amazon S3
+set +e
+while true; do
+    echo "Waiting for $import_id to be ready"
+    ec2-describe-conversion-tasks $import_id | fgrep completed
+    if [ $? -eq 0 ]; then
+        break
+    fi
+    sleep 10
+done
+set -e
 
-# wait for it to finish running this command until you see "complete" and a volume id
-ec2-describe-conversion-tasks | grep import-vol-fg53puyf -A 1
-TaskType        IMPORTVOLUME    TaskId  import-vol-fg53puyf     ExpirationTime  2014-02-26T03:58:38Z    Status  completed
-DISKIMAGE       DiskImageFormat VHD     DiskImageSize   255921664       VolumeId        vol-fdab9af2    VolumeSize      3       AvailabilityZone        ap-southeast-1aApproximateBytesConverted        255921664
+#ec2-describe-conversion-tasks | grep import-vol-fg53puyf
+#TaskType        IMPORTVOLUME    TaskId  import-vol-fg53puyf     ExpirationTime  2014-02-26T03:58:38Z    Status  completed
+#DISKIMAGE       DiskImageFormat VHD     DiskImageSize   255921664       VolumeId        vol-fdab9af2    VolumeSize      3       AvailabilityZone        ap-southeast-1aApproximateBytesConverted        255921664
+
+volume_id=`ec2-describe-conversion-tasks $import_id | grep VolumeId | awk '{print $7}'`
+
+./volume-to-ami $volume_id $image
+
 
 # At this point, you can just run ./volume-to-ami
