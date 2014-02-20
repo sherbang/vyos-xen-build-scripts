@@ -10,5 +10,19 @@ for machine in $vms; do
     echo -n "Hit enter to unregister this VM: " 
     VBoxManage list vms | fgrep $machine
     read dummy
+    set +e
+    VBoxManage showvminfo $machine | grep ^State | fgrep running
+    if [ $? -eq 0 ]; then
+        VBoxManage controlvm $machine poweroff
+        # Wait for the VM to shut down
+        while true; do
+            VBoxManage showvminfo $machine | grep ^State | fgrep 'powered off'
+            if [ $? -eq 0 ]; then
+                break
+            fi
+        done
+    fi
+    set -e
+    echo "Unregistering..."
     VBoxManage unregistervm --delete $machine
 done
