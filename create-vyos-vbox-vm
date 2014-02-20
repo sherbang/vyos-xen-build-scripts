@@ -27,7 +27,7 @@ VBoxManage createvm --name $machine_name --ostype Linux_64 --register
 # Needs to be split between two steps else I get an error about
 #  server mode.
 VBoxManage modifyvm $machine_name --uart1 0x3F8 4
-VBoxManage modifyvm $machine_name --uartmode1 server $pipename
+VBoxManage modifyvm $machine_name --uartmode1 $pipemode $pipename
 
 
 # Create SATA storage controller
@@ -50,3 +50,44 @@ VBoxManage storageattach $machine_name --storagectl sata --port 1 --type hdd --m
 
 # mount iso
 VBoxManage storageattach $machine_name --storagectl sata --port 2 --type dvddrive --medium "$iso"
+
+if [ "`uname -o`" == "Cygwin" ]; then
+    set +e
+    taskkill /F /IM vmwaregateway.exe
+    set -e
+    ./vmwaregateway /T &
+    vmwaregateway_pid=$!
+    echo "vmwaregateway.exe pid $vmwaregateway_pid"
+fi
+
+# Start the VM
+echo "Starting VM"
+VBoxManage startvm $machine_name
+
+echo "Sleeping 10 for cygwin's sake"
+sleep 10
+
+# Install VyOS
+# Sends commands over the serial console using expect
+echo "Installing over serial console"
+./vyos-install.expect tcp-connect:127.0.0.1:567
+
+# Wait for the VM to shut down
+while true; do
+    set +e
+    VBoxManage showvminfo $machine_name | grep ^State | fgrep 'powered off'
+    if [ $? -eq 0 ]; then
+       break
+    fi
+    set -e
+done
+
+# Remove the CD from the SATA controller
+# Boot it
+# Run another expect script which logs in and preps config
+
+if [ "`uname -o`" == "Cygwin" ]; then
+    # clean up
+    taskkill /F /IM vmwaregateway.exe
+fi
+
