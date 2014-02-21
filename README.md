@@ -16,14 +16,17 @@ The process is something like:
 
 # Status
 
-Under heavy development.  Most of the code is here, now just needs bug fixes.  The VirtualBox automation works beautifully on my OS X machine and my Windows/Cygwin machine.  It doesn't yet produce a working AMI as I'm still troubleshooting the whole partition-vs-disk thing with PV-GRUB, but my latest changes might just work.
+Under heavy development.  Most of the code is here, but needs a lot of refinement.  The VirtualBox automation works beautifully on my OS X machine and my Windows/Cygwin machine.  The AWS scripts will work for me only as I haven't automated the S3 portion just yet.
+
+The produced AMI boots and works!  It doesn't use the EC2 password system yet, so credentials are quite insecure for a cloud router - vyos/vyos.
 
 ## To Do
 
+* Automate S3 bucket creation
+* Set up EC2 password system so new instances use pubkey authentication
 * Get it working reliably building nightly VyOS images
 * Explore integrating with https://github.com/vyos/build-iso
  * Add an option in the installer like `install image xen-pv` or maybe `install image pvgrub` which installs a `menu.lst` file appropriate for PV-GRUB 0.97, and puts in the right upgrade hooks so that this file is kept up to date.
-* Automate S3 bucket creation
 * Write test script to verify that VirtualBox VBoxManage, expect, socat, ec2-* tools all will work as expected, which gets run before we try anything.  Need to test that ec2 permissions are working.
 * Automate cleanup of the mess this leaves behind - a dangling s3 directory and a dangling EBS volume. Or perhaps the AMI can be registered directly from the s3 bucket, rather than a snapshot?  But maybe we don't want this.
 * Script to duplicate the AMI to all regions and make them publicly usable
@@ -38,3 +41,7 @@ You'll need VirtualBox installed, VBoxManage in your PATH, `expect` and `socat` 
 # Rationale
 
 I'm sure this can be done better by submiting changes to the vyos iso build module and building an AMI directly from that.  Why this?  I did it because it was fun!
+
+# Credits
+
+Thanks to j3tm0t0 who wrote the first guide I ever found on how to set up Vyatta Core 6.3 in AWS.  I've now used some of these ideas to get this up and going, and we've also used this guide at work (mintel.com) to build a private Vyatta Core image which we've reused many times.  Whoever you are good sir, thank you!  Link: http://d.hatena.ne.jp/j3tm0t0/20111113/1321192227
