@@ -16,7 +16,11 @@ set timeout 10
 expect "vyos@vyos:~"
 
 send "conf\n"
-expect "\[edit\]"
+expect "\\\[edit\\\]"
+
+send "set system login banner \"This AMI was built by scripts from https://github.com/trickv/vyos-ami-build-scripts\\nThese scripts are beta and you shouldn't use this in production!\\nPlease send feedback on Github.\\n\"\n"
+expect "\\\[edit\\\]"
+
 send "set service ssh\n"
 send "set interfaces ethernet eth0 address dhcp\n"
 send "delete interfaces ethernet eth0 hw-id\n"
@@ -25,13 +29,13 @@ send "delete interfaces ethernet eth0 hw-id\n"
 #   but it's what we need in AWS because ttyS0 doesn't exist there.
 #send "delete system console device ttyS0\n"
 send "set system console device hvc0 speed 9600\n"
-expect "\[edit\]"
+expect "\\\[edit\\\]"
 send "commit\n"
-expect "\[edit\]"
+expect "\\\[edit\\\]"
 send "save\n"
 expect "Saving configuration"
 expect "Done"
-expect "\[edit\]"
+expect "\\\[edit\\\]"
 send "exit\n"
 
 # bug: once in a while, committing the configuration seems to log me out.
@@ -63,6 +67,7 @@ send "kernel /boot/1.0.2/vmlinuz boot=live vyatta-union=/boot/1.0.2 console=hvc0
 send "initrd /boot/1.0.2/initrd.img\n"
 send "EndOfGrubConf\n"
 expect "root@vyos:~"
+
 
 send "cat /boot/grub/menu.lst\n"
 expect "root@vyos:~"
