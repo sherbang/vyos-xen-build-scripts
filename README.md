@@ -9,13 +9,14 @@ The process is something like:
 2. Create a VirtualBox VM (`create-vyos-vbox-vm`) which includes the following:
  * Install VyOS on the VM, driving input via the serial console (`vyos-install.expect`)
  * Reboot and configure the VM, again via serial console (`vyos-configure.expect`)
+ * Reboot again from the VyOS ISO with a second disk attached, and duplicate the partition data into it's own volume (`copy-partition-to-disk.expect`)
 3. Upload the disk image to AWS (`push-image-to-aws`)
  * Make an AMI out of the disk image, using PV-GRUB as the kernel (`volume-to-ami`)
   * Spin up an instance to see if it worked
 
 # Status
 
-Under heavy development.  Most of the code is here, now just needs bug fixes.  And the resulting AMI actually needs to boot, and work!
+Under heavy development.  Most of the code is here, now just needs bug fixes.  The VirtualBox automation works beautifully on my OS X machine and my Windows/Cygwin machine.  It doesn't yet produce a working AMI as I'm still troubleshooting the whole partition-vs-disk thing with PV-GRUB, but my latest changes might just work.
 
 # Platform Requirements
 
