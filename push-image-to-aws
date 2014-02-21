@@ -17,7 +17,7 @@ image=$1
 
 import_output=`mktemp /tmp/import_output.XXXXXX`
 
-ec2-import-volume $image -f VHD --region ap-southeast-1 -z ap-southeast-1a -b trickv-vyos-import --prefix $image -o $AWS_ACCESS_KEY -w $AWS_SECRET_KEY | tee $import_output
+ec2-import-volume $image -f VHD --region ap-southeast-1 -z ap-southeast-1b -b trickv-vyos-import --prefix $image -o $AWS_ACCESS_KEY -w $AWS_SECRET_KEY | tee $import_output
 
 import_id=`cat $import_output | grep 'The disk image for import-vol' | awk '{print $5}'`
 
