@@ -1,0 +1,30 @@
+#!/usr/bin/env expect
+
+set timeout 90
+
+set pipe [lindex $argv 0]
+
+spawn socat $pipe -
+set timeout 90
+expect "vyos login:"
+send "\n"
+expect "vyos login:"
+send "vyos\n"
+expect "Password:"
+send "vyos\n"
+set timeout 10
+expect "vyos@vyos:~"
+
+send "sudo -i\n"
+expect "root@vyos:~"
+
+send "dd if=/dev/sda1 of=/dev/sdb bs=10M\n"
+expect "copied"
+expect "root@vyos:~"
+send "exit\n"
+
+expect "vyos@vyos:~"
+send "poweroff\n"
+expect "Proceed with poweroff"
+send "Yes\n"
+expect EOF

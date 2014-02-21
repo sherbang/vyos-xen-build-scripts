@@ -21,8 +21,20 @@ elif [ "`uname`" == "Darwin" -o "`uname`" == "Linux" ]; then
     pipemode="server"
 else
     echo "Not yet implemented for `uname -a`"
-    exit 42
+    exit 1
 fi
+
+function wait_for_vm_shutdown() {
+    machine_name=$1
+    while true; do
+        set +e
+        VBoxManage showvminfo $machine_name | grep ^State | fgrep 'powered off'
+        if [ $? -eq 0 ]; then
+           break
+        fi
+        set -e
+    done
+}
 
 VBoxManage createvm --name $machine_name --ostype Linux_64 --register
 
@@ -35,7 +47,7 @@ VBoxManage modifyvm $machine_name --uartmode1 $pipemode $pipename
 
 
 # Create SATA storage controller
-VBoxManage storagectl $machine_name --add sata --name sata --controller IntelAhci --portcount 2
+VBoxManage storagectl $machine_name --add sata --name sata --controller IntelAhci --portcount 3
 
 # Create and add hard disk. AWS likes VHD, VMDK, and RAW
 # I chose VHD because of it's dynamic space allocation and it seems to work.
@@ -74,15 +86,7 @@ VBoxManage startvm $machine_name
 echo "Installing over serial console"
 ./vyos-install.expect $socat_pipe_name
 
-# Wait for the VM to shut down
-while true; do
-    set +e
-    VBoxManage showvminfo $machine_name | grep ^State | fgrep 'powered off'
-    if [ $? -eq 0 ]; then
-       break
-    fi
-    set -e
-done
+wait_for_vm_shutdown $machine_name
 
 # Remove the CD from the SATA controller by "attaching" an empty device :)
 VBoxManage storageattach $machine_name --storagectl sata --port 2 --type dvddrive --medium none
@@ -94,12 +98,32 @@ VBoxManage startvm $machine_name
 echo "Configuring VyOS for AWSification"
 ./vyos-configure.expect $socat_pipe_name
 
+wait_for_vm_shutdown $machine_name
+
+
+# Hack alert: we need to get a copy of the partition data, not the whole disk, onto it's own disk image.
+# Create a second disk, add the installer iso back on, and we'll use the installer environment to perform the dd.
+disk_part_path=$machine_path/disk-part.vhd
+VBoxManage createhd --filename "$disk_part_path" --size 2048 --format VHD
+VBoxManage storageattach $machine_name --storagectl sata --port 3 --type hdd --medium "$disk_part_path"
+# Mount vyos installer iso
+VBoxManage storageattach $machine_name --storagectl sata --port 2 --type dvddrive --medium "$iso"
+# Boot it
+VBoxManage startvm $machine_name
+# Run expect script which does the dd business
+echo "Copying disk partition to a full disk image"
+./copy-partition-to-disk.expect $socat_pipe_name
+
+wait_for_vm_shutdown $machine_name
+
 if [ "$namedpipe" == "yes" ]; then
     # clean up
     taskkill /F /IM vmwaregateway.exe
 fi
 
-cp -v "$disk_path" ./$machine_name.vhd
+cp -v "$disk_part_path" ./$machine_name-part.vhd
+
+exit 42
 
 VBoxManage unregistervm --delete $machine_name
 
