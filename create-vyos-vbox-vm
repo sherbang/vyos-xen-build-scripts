@@ -121,6 +121,9 @@ echo "Copying disk partition to a full disk image"
 
 shutdown_vm $machine_name $socat_pipe_name
 
+# Eject the disk so further hackery on the VM can be done
+VBoxManage storageattach $machine_name --storagectl sata --port 2 --type dvddrive --medium none
+
 if [ "$namedpipe" == "yes" ]; then
     # clean up
     taskkill /F /IM vmwaregateway.exe
@@ -128,9 +131,8 @@ fi
 
 cp -v "$disk_part_path" ./$machine_name-part.vhd
 
-exit 42
-
-VBoxManage unregistervm --delete $machine_name
+# Uncomment this for production: VBoxManage unregistervm --delete $machine_name
 
 echo "VirtualBox build done. Disk image is here: $machine_name.vhd"
+echo "I've left the VirtualBox VM in place, which can be deleted with ./cleanup-vms"
 echo "Now go run ./push_image_to_aws $machine_name.vhd"
