@@ -1,12 +1,8 @@
 #!/usr/bin/env expect
 
-set timeout 90
-
 set pipe [lindex $argv 0]
 
 spawn socat $pipe -
-set timeout 90
-expect "vyos login:"
 send "\n"
 expect "vyos login:"
 send "vyos\n"
@@ -36,7 +32,3 @@ send "vyos\n"
 expect "Which drive should GRUB"
 send "\n"
 expect "vyos@vyos:~"
-send "poweroff\n"
-expect "Proceed with poweroff"
-send "Yes\n"
-expect EOF

@@ -24,8 +24,11 @@ else
     exit 1
 fi
 
-function wait_for_vm_shutdown() {
+function shutdown_vm() {
     machine_name=$1
+    socat_pipe_name=$2
+    echo "* Shutting down VM"
+    ./poweroff.expect $socat_pipe_name
     while true; do
         set +e
         VBoxManage showvminfo $machine_name | grep ^State | fgrep 'powered off'
@@ -84,9 +87,10 @@ VBoxManage startvm $machine_name
 # Install VyOS
 # Sends commands over the serial console using expect
 echo "Installing over serial console"
+./wait-for-login.expect $socat_pipe_name
 ./vyos-install.expect $socat_pipe_name
 
-wait_for_vm_shutdown $machine_name
+shutdown_vm $machine_name $socat_pipe_name
 
 # Remove the CD from the SATA controller by "attaching" an empty device :)
 VBoxManage storageattach $machine_name --storagectl sata --port 2 --type dvddrive --medium none
@@ -96,10 +100,10 @@ VBoxManage startvm $machine_name
 
 # Run another expect script which logs in and preps config
 echo "Configuring VyOS for AWSification"
+./wait-for-login.expect $socat_pipe_name
 ./vyos-configure.expect $socat_pipe_name
 
-wait_for_vm_shutdown $machine_name
-
+shutdown_vm $machine_name $socat_pipe_name
 
 # Hack alert: we need to get a copy of the partition data, not the whole disk, onto it's own disk image.
 # Create a second disk, add the installer iso back on, and we'll use the installer environment to perform the dd.
@@ -112,9 +116,10 @@ VBoxManage storageattach $machine_name --storagectl sata --port 2 --type dvddriv
 VBoxManage startvm $machine_name
 # Run expect script which does the dd business
 echo "Copying disk partition to a full disk image"
+./wait-for-login.expect $socat_pipe_name
 ./copy-partition-to-disk.expect $socat_pipe_name
 
-wait_for_vm_shutdown $machine_name
+shutdown_vm $machine_name $socat_pipe_name
 
 if [ "$namedpipe" == "yes" ]; then
     # clean up
@@ -128,3 +133,4 @@ exit 42
 VBoxManage unregistervm --delete $machine_name
 
 echo "VirtualBox build done. Disk image is here: $machine_name.vhd"
+echo "Now go run ./push_image_to_aws $machine_name.vhd"

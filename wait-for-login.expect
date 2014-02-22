@@ -1,0 +1,10 @@
+#!/usr/bin/env expect
+
+set pipe [lindex $argv 0]
+set timeout 90
+
+spawn socat $pipe -
+expect "vyos login:"
+send "\n"
+expect "vyos login:"
+

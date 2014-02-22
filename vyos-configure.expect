@@ -1,24 +1,19 @@
 #!/usr/bin/env expect
 
-set timeout 90
-
 set pipe [lindex $argv 0]
 
 spawn socat $pipe -
-set timeout 90
-expect "vyos login:"
 send "\n"
 expect "vyos login:"
 send "vyos\n"
 expect "Password:"
 send "vyos\n"
-set timeout 10
 expect "vyos@vyos:~"
 
 send "conf\n"
 expect "\\\[edit\\\]"
 
-send "set system login banner \"This AMI was built by scripts from https://github.com/trickv/vyos-ami-build-scripts\\nThese scripts are beta and you shouldn't use this in production!\\nPlease send feedback on Github.\\n\"\n"
+send "set system login banner post-login \"This AMI was built by scripts from https://github.com/trickv/vyos-ami-build-scripts\\nThese scripts are beta and you should not use this in production!\\nPlease send feedback on Github.\\n\"\n"
 expect "\\\[edit\\\]"
 
 send "set service ssh\n"
@@ -28,7 +23,7 @@ send "delete interfaces ethernet eth0 hw-id\n"
 # It means that a dev machine can't be used with these scripts anymore,
 #   but it's what we need in AWS because ttyS0 doesn't exist there.
 #send "delete system console device ttyS0\n"
-send "set system console device hvc0 speed 9600\n"
+#send "set system console device hvc0 speed 9600\n"
 expect "\\\[edit\\\]"
 send "commit\n"
 expect "\\\[edit\\\]"
