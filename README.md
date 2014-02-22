@@ -12,7 +12,7 @@ The process is something like:
  * Reboot again from the VyOS ISO with a second disk attached, and duplicate the partition data into it's own volume (`copy-partition-to-disk.expect`)
 3. Upload the disk image to AWS (`push-image-to-aws`)
  * Make an AMI out of the disk image, using PV-GRUB as the kernel (`volume-to-ami`)
-  * Spin up an instance to see if it worked
+   * Spin up an instance to see if it worked
 
 # Status
 
