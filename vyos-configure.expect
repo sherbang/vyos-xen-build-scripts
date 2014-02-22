@@ -13,7 +13,7 @@ expect "vyos@vyos:~"
 send "conf\n"
 expect "\\\[edit\\\]"
 
-send "set system login banner post-login \"This AMI was built by scripts from https://github.com/trickv/vyos-ami-build-scripts\\nThese scripts are beta and you should not use this in production!\\nPlease send feedback on Github.\\n\"\n"
+send "set system login banner post-login \"\\nThis AMI was built by scripts from https://github.com/trickv/vyos-ami-build-scripts\\nThese scripts are beta and you should not use this in production!\\nPlease send feedback on Github.\\n\"\n"
 expect "\\\[edit\\\]"
 
 send "set service ssh\n"
