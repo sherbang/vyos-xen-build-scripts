@@ -69,7 +69,3 @@ expect "root@vyos:~"
 send "exit\n"
 
 expect "vyos@vyos:~"
-send "poweroff\n"
-expect "Proceed with poweroff"
-send "Yes\n"
-expect EOF
