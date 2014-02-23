@@ -3,7 +3,7 @@
 #exp_internal 1
 
 set pipe [lindex $argv 0]
-set import_ssh_script "ec2_init.expect"
+set ec2_init_script "ec2_init.sh"
 
 spawn socat $pipe -
 send "\n"
@@ -66,8 +66,8 @@ send "initrd /boot/1.0.2/initrd.img\n"
 send "EndOfGrubConf\n"
 expect "root@vyos:~"
 
-send "cat > /etc/ec2_init.expect << 'EOF'\n"
-set file_handle [open $import_ssh_script r]
+send "cat > /etc/$ec2_init_script << 'EOF'\n"
+set file_handle [open $ec2_init_script r]
 while {[gets $file_handle read_line] != -1} {
     send "$read_line"
     send "\n"
@@ -81,12 +81,12 @@ while {[gets $file_handle read_line] != -1} {
 send "EOF\n"
 
 expect "root@vyos:~"
-send "chmod +x /etc/ec2_init.expect\n"
+send "chmod +x /etc/$ec2_init_script\n"
 expect "root@vyos:~"
 
 send "sed -i -e s:'exit 0'::g /etc/rc.local\n"
 expect "root@vyos:~"
-send "echo /etc/ec2_init.expect >> /etc/rc.local\n"
+send "echo /etc/$ec2_init_script >> /etc/rc.local\n"
 send "echo exit 0 >> /etc/rc.local\n"
 
 
