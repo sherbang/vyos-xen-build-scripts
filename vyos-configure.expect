@@ -1,7 +1,5 @@
 #!/usr/bin/env expect
 
-#exp_internal 1
-
 set pipe [lindex $argv 0]
 set ec2_init_script "ec2_init.sh"
 set ec2_configure_script "ec2_configure.sh"
@@ -23,11 +21,8 @@ expect "\\\[edit\\\]"
 send "set service ssh\n"
 send "set interfaces ethernet eth0 address dhcp\n"
 send "delete interfaces ethernet eth0 hw-id\n"
-# Uncomment the following line when we get closer to done with this.
-# It means that a dev machine can't be used with these scripts anymore,
-#   but it's what we need in AWS because ttyS0 doesn't exist there.
-#send "delete system console device ttyS0\n"
-#send "set system console device hvc0 speed 9600\n"
+send "delete system console device ttyS0\n"
+send "set system console device hvc0 speed 9600\n"
 expect "\\\[edit\\\]"
 send "commit\n"
 expect "\\\[edit\\\]"
