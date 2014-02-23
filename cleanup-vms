@@ -23,6 +23,7 @@ for machine in $vms; do
         done
     fi
     set -e
+    sleep 1
     echo "Unregistering..."
     VBoxManage unregistervm --delete $machine
 done
