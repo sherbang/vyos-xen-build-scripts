@@ -43,3 +43,4 @@ instance_id=`ec2-run-instances -k aws-pv-sg -t t1.micro -z ap-southeast-1b $ami 
 ec2-create-tags $instance_id -t Name=$2
 
 echo "Instance ID $instance_id created with name $2"
+ec2-describe-instances $instance_id | grep ^INSTANCE | awk '{print $14}'
