@@ -4,6 +4,7 @@
 
 set pipe [lindex $argv 0]
 set ec2_init_script "ec2_init.sh"
+set ec2_configure_script "ec2_configure.sh"
 
 spawn socat $pipe -
 send "\n"
@@ -72,11 +73,19 @@ while {[gets $file_handle read_line] != -1} {
     send "$read_line"
     send "\n"
 } 
+send "EOF\n"
 
+send "cat > /etc/$ec2_configure_script << 'EOF'\n"
+set file_handle [open $ec2_configure_script r]
+while {[gets $file_handle read_line] != -1} {
+    send "$read_line"
+    send "\n"
+} 
 send "EOF\n"
 
 expect "root@vyos:~"
 send "chmod +x /etc/$ec2_init_script\n"
+send "chmod +x /etc/$ec2_configure_script\n"
 expect "root@vyos:~"
 
 send "sed -i -e s:'exit 0'::g /etc/rc.local\n"
