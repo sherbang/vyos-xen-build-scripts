@@ -24,8 +24,11 @@ COMMIT=${vyatta_sbindir}/my_commit
 
 echo "Loading SSH key for user vyos:"
 $vyatta_sbindir/vyatta-load-user-key.pl vyos http://169.254.169.254/$aws_api/meta-data/public-keys/0/openssh-key
-$DELETE system login user vyos authentication encrypted-password
 $SET service ssh disable-password-authentication
+
+echo "Setting up consoles"
+$DELETE system console device ttyS0
+$SET system console device hvc0 speed 9600
 
 echo "Setting hostname."
 $SET system host-name `curl -s http://169.254.169.254/$aws_api/meta-data/public-hostname/ | cut -d. -f1`
