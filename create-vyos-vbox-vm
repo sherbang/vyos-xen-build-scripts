@@ -135,4 +135,4 @@ cp -v "$disk_part_path" ./$machine_name-part.vhd
 
 echo "VirtualBox build done. Disk image is here: $machine_name.vhd"
 echo "I've left the VirtualBox VM in place, which can be deleted with ./cleanup-vms"
-echo "Now go run ./push_image_to_aws $machine_name.vhd"
+echo "Now go run ./push_image_to_aws $machine_name-part.vhd"
