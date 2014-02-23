@@ -18,12 +18,11 @@ The process is something like:
 
 Under heavy development.  Most of the code is here, but needs a lot of refinement.  The VirtualBox automation works beautifully on my OS X machine and my Windows/Cygwin machine.  The AWS scripts will work for me only as I haven't automated the S3 portion just yet.
 
-The produced AMI boots and works!  It doesn't use the EC2 password system yet, so credentials are quite insecure for a cloud router - vyos/vyos.
+The produced AMI boots and works.  It loads the specified public key for SSH authentication, so you must authenticate as user vyos with your key.  However you can modify this after initial login.
 
 ## To Do
 
 * Automate S3 bucket creation
-* Set up EC2 password system so new instances use pubkey authentication
 * Get it working reliably building nightly VyOS images
 * Explore integrating with https://github.com/vyos/build-iso
  * Add an option in the installer like `install image xen-pv` or maybe `install image pvgrub` which installs a `menu.lst` file appropriate for PV-GRUB 0.97, and puts in the right upgrade hooks so that this file is kept up to date.
