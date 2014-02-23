@@ -73,11 +73,6 @@ while {[gets $file_handle read_line] != -1} {
     send "\n"
 } 
 
-#close
-#spawn socat gopen:import_aws_ssh_key.expect $pipe
-#sleep 2
-#spawn socat $pipe -
-
 send "EOF\n"
 
 expect "root@vyos:~"
@@ -92,4 +87,3 @@ send "echo exit 0 >> /etc/rc.local\n"
 
 send "exit\n"
 expect "vyos@vyos:~"
-#close $file_handle
