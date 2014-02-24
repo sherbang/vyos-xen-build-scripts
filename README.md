@@ -20,6 +20,20 @@ Under heavy development.  Most of the code is here, but needs a lot of refinemen
 
 The produced AMI boots and works.  It loads the specified public key for SSH authentication, so you must authenticate as user vyos with your key.  However you can modify this after initial login.
 
+## AMI IDs for public use
+
+These images are provided AS-IS and are not official VyOS releases. Please don't file bugs to the VyOS team, just file them to this project on github.  These images are not widely used nor have been vetted by any other developers.
+
+Version "VyOS 1.0.2 Preview AMI 20140224pv":
+* ap-northeast-1  - `ami-f97c0bf8`
+* ap-southeast-1 - `ami-a45405f6`
+* ap-southeast-2  - `ami-abe77e91`
+* eu-west-1  - `ami-a000f3d7`
+* sa-east-1  - `ami-69bc1f74`
+* us-east-1  - `ami-6763630e`
+* us-west-1  - `ami-2cdde169`
+* us-west-2  - `ami-4e204c7e`
+
 ## To Do
 
 * Automate S3 bucket creation
