@@ -8,9 +8,11 @@ if [ $# -ne 2 ]; then
     exit 1
 fi
 
+git_revision=`git rev-parse HEAD`
 
 echo "Volume ID: $1"
 echo "Description: $2"
+echo "git revision: $git_revision"
 
 # Request a snapshot
 snapshot_id=`ec2-create-snapshot --description "$2" $1 | awk '{print $2}'`
@@ -33,7 +35,7 @@ done
 
 # make the AMI
 echo "Creating AMI"
-ami=`ec2-register --architecture x86_64 --name "$2" --description "Unofficial VyOS AMI produced from build scripts at https://github.com/trickv/vyos-ami-build-scripts" --snapshot $snapshot_id --kernel $pvgrub_aki --root-device-name /dev/sda1 | awk '{print $2}'`
+ami=`ec2-register --architecture x86_64 --name "$2" --description "Unofficial VyOS AMI produced from build scripts at https://github.com/trickv/vyos-ami-build-scripts $git_revision" --snapshot $snapshot_id --kernel $pvgrub_aki --root-device-name /dev/sda1 | awk '{print $2}'`
 
 # Tag the snapshot so I can see which AMI it is for
 ec2-create-tags $snapshot_id --tag "Name=$ami $2"
