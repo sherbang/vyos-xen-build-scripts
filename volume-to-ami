@@ -13,7 +13,7 @@ echo "Volume ID: $1"
 echo "Description: $2"
 
 # Request a snapshot
-snapshot_id=`ec2-create-snapshot --description $2 $1 | awk '{print $2}'`
+snapshot_id=`ec2-create-snapshot --description "$2" $1 | awk '{print $2}'`
 
 # find latest pvgrub aki
 echo "Finding pvgrub AKI"
@@ -33,14 +33,17 @@ done
 
 # make the AMI
 echo "Creating AMI"
-ami=`ec2-register --architecture x86_64 --name $2 --snapshot $snapshot_id --kernel $pvgrub_aki --root-device-name /dev/sda1 | awk '{print $2}'`
+ami=`ec2-register --architecture x86_64 --name "$2" --description "Unofficial VyOS AMI produced from build scripts at https://github.com/trickv/vyos-ami-build-scripts" --snapshot $snapshot_id --kernel $pvgrub_aki --root-device-name /dev/sda1 | awk '{print $2}'`
+
+# Tag the snapshot so I can see which AMI it is for
+ec2-create-tags $snapshot_id --tag "Name=$ami $2"
 
 # Launch one
 echo "Launching an instance"
 instance_id=`ec2-run-instances -k aws-pv-sg -t t1.micro -z ap-southeast-1b $ami | grep ^INSTANCE | awk '{print $2}'`
 
 # Tag it with a name:
-ec2-create-tags $instance_id -t Name=$2
+ec2-create-tags $instance_id -t "Name=$2"
 
 echo "Instance ID $instance_id created with name $2"
 ec2-describe-instances $instance_id | grep ^INSTANCE | awk '{print $14}'
