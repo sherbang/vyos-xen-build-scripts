@@ -31,7 +31,7 @@ $DELETE system console device ttyS0
 $SET system console device hvc0 speed 9600
 
 echo "Setting hostname."
-$SET system host-name `curl -s http://169.254.169.254/$aws_api/meta-data/public-hostname/ | cut -d. -f1`
+$SET system host-name `curl -s http://169.254.169.254/$aws_api/meta-data/local-hostname/ | cut -d. -f1`
 
 echo "Committing configuration."
 $COMMIT
