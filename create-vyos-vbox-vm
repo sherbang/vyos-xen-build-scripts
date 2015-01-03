@@ -3,7 +3,7 @@
 set -u
 set -e
 
-iso=vyos-1.0.2-amd64.iso
+iso=vyos-1.1.0-amd64.iso
 
 machine_name="vyos-ami-build-`date -u +%Y%m%d-%H%M%S`"
 
