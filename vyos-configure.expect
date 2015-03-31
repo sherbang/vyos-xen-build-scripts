@@ -1,8 +1,6 @@
 #!/usr/bin/env expect
 
 set pipe [lindex $argv 0]
-set ec2_init_script "ec2_init.sh"
-set ec2_configure_script "ec2_configure.sh"
 
 spawn socat $pipe -
 send "\n"
@@ -15,14 +13,10 @@ expect "vyos@vyos:~"
 send "conf\n"
 expect "\\\[edit\\\]"
 
-#send "set system login banner post-login \"\\n************ BETA *************\\nThis AMI was built by scripts from https://github.com/trickv/vyos-ami-build-scripts\\nThese scripts are beta and you should not use this in production!\\nThis image is NOT upgradeable.\\nPlease send feedback on Github.\\n\\n\"\n"
-#expect "\\\[edit\\\]"
-
 send "set service ssh\n"
 send "set interfaces ethernet eth0 address dhcp\n"
+# This is important since the MAC will change
 send "delete interfaces ethernet eth0 hw-id\n"
-#send "delete system console device ttyS0\n"
-#send "set system console device hvc0 speed 9600\n"
 expect "\\\[edit\\\]"
 send "commit\n"
 expect "\\\[edit\\\]"
@@ -49,45 +43,4 @@ expect "Done"
 expect "\[edit\]"
 send "exit\n"
 
-#send "sudo -i\n"
-#expect "root@vyos:~"
-#
-#send "cat > /boot/grub/menu.lst << EndOfGrubConf\n"
-#send "default=0\n"
-#send "timeout=1\n\n"
-#send "title VyOS\n"
-#send "root (hd0)\n"
-#send "kernel /boot/1.1.5/vmlinuz boot=live vyatta-union=/boot/1.1.5 console=hvc0 root=/dev/xvda\n"
-#send "initrd /boot/1.1.5/initrd.img\n"
-#send "EndOfGrubConf\n"
-#expect "root@vyos:~"
-#
-#send "cat > /etc/$ec2_init_script << 'EOF'\n"
-#set file_handle [open $ec2_init_script r]
-#while {[gets $file_handle read_line] != -1} {
-#    send "$read_line"
-#    send "\n"
-#} 
-#send "EOF\n"
-#
-#send "cat > /etc/$ec2_configure_script << 'EOF'\n"
-#set file_handle [open $ec2_configure_script r]
-#while {[gets $file_handle read_line] != -1} {
-#    send "$read_line"
-#    send "\n"
-#} 
-#send "EOF\n"
-#
-#expect "root@vyos:~"
-#send "chmod +x /etc/$ec2_init_script\n"
-#send "chmod +x /etc/$ec2_configure_script\n"
-#expect "root@vyos:~"
-#
-#send "sed -i -e s:'exit 0'::g /etc/rc.local\n"
-#expect "root@vyos:~"
-#send "echo /etc/$ec2_init_script >> /etc/rc.local\n"
-#send "echo exit 0 >> /etc/rc.local\n"
-#
-#
-#send "exit\n"
 expect "vyos@vyos:~"
