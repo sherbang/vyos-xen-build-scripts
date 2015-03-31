@@ -3,7 +3,7 @@
 set -u
 set -e
 
-iso=vyos-1.1.4-amd64.iso
+iso=vyos-1.1.5-amd64.iso
 
 machine_name="vyos-ami-build-`date -u +%Y%m%d-%H%M%S`"
 
@@ -99,7 +99,7 @@ VBoxManage storageattach $machine_name --storagectl sata --port 2 --type dvddriv
 VBoxManage startvm $machine_name
 
 # Run another expect script which logs in and preps config
-echo "Configuring VyOS for AWSification"
+echo "Configuring VyOS"
 ./wait-for-login.expect $socat_pipe_name
 ./vyos-configure.expect $socat_pipe_name
 
@@ -107,6 +107,7 @@ shutdown_vm $machine_name $socat_pipe_name
 
 # Hack alert: we need to get a copy of the partition data, not the whole disk, onto it's own disk image.
 # Create a second disk, add the installer iso back on, and we'll use the installer environment to perform the dd.
+disk_path=$machine_path/disk.vhd
 disk_part_path=$machine_path/disk-part.vhd
 VBoxManage createhd --filename "$disk_part_path" --size 2048 --format VHD
 VBoxManage storageattach $machine_name --storagectl sata --port 3 --type hdd --medium "$disk_part_path"
@@ -129,6 +130,7 @@ if [ "$namedpipe" == "yes" ]; then
     taskkill /F /IM vmwaregateway.exe
 fi
 
+cp -v "$disk_path" ./$machine_name.vhd
 cp -v "$disk_part_path" ./$machine_name-part.vhd
 
 # Uncomment this for production: VBoxManage unregistervm --delete $machine_name
